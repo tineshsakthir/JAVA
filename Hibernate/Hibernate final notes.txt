@@ -1,0 +1,89 @@
+12-Dec-2023 
+-----------
+
+CRUD OPERATION : 
+----------------
+
+C - Create  => Insert command - StudentInsert.java
+R - Select  => Select command -  StudentList.java
+U - Update => Update command - StudentUpdate.java
+D - Delete => Delete command - StudentDelete.java
+
+
+
+Update Operation : 
+-------------------
+
+package com.hibernate;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.query.MutationQuery;
+
+public class StudentUpdate {
+    public static void main(String[] args) {
+        SessionFactory sessionFactory = HibernateUtil.getSessionFactory() ;
+        Session session = sessionFactory.openSession() ;
+        // Transaction is only required for insert update and delete operations
+        Transaction tx = session.beginTransaction() ;
+
+//      //Method 1
+//        Student stud = session.get(Student.class  ,9 ) ;
+//        stud.setsName("Karthick Suburaj");
+//        session.merge(stud) ;
+        //Method Two (HQL - hybernate query Language - The update is made on the model(Student object) , not directly //on the table, so use use object attributes in the query, don't use table attrubute names in the below query)
+        MutationQuery query = session.createMutationQuery("update Student set sName = :sName where sId = :sId ") ;
+        query.setParameter("sName" , "Maritmuthu") ;
+        query.setParameter("sId" , 9 ) ;
+        query.executeUpdate() ;
+        tx.commit();
+        session.close() ;
+
+    }
+}
+
+
+
+Select Operation : 
+--------------------
+
+Selcect single row with primary key : 
+-------------------------------------
+Student stud = session.get(Student.class  ,9 ) ;
+sout(stud.getsId()) ; 
+
+
+
+issues fixed :
+
+Train not found 
+solved :
+
+@Entity
+@Table(name ="train_info")
+
+and 
+
+@Entity(name ="train_info")
+
+are different . This caused the error in the entity not found
+
+
+2.issue(With the taglib in jsp page) : 
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+solved with the stackoverflow :
+https://stackoverflow.com/questions/4928271/how-to-install-jstl-it-fails-with-the-absolute-uri-cannot-be-resolved-or-una
+
+3. issue on printing the value in the jsp with EL :
+solved by adding the below at the top in the jsp page:
+<%@ page isELIgnored="false" %>
+
+
+
+
+21-dec-2023 :(POJO issue)
+
+the POJO should not contain any contructor or any other funcions . It should only contain private variables and getters and setters ......
+
+If other contructors or methods is present , the mapping will not work properly and the data will not be selected from the db ......

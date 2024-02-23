@@ -1,0 +1,118 @@
+Issue solving pre-Note : 
+
+In some instances you may end up in cannot resolve "dialect" in hibernate core jar file(hibernate core jar file is missing even after adding the dependencies in the pom file .Just showing the hibrnate annotation jar file) .
+In some instances you may end up in not having the below classes :
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+
+so to solve these just remove the dependencies and re-insert the dependencies in the pom file . Or try inserting different dependencies in the pom file again and again .It will solve in some time.Because it happened to me and i just resolved it in that way.
+
+
+Procedure starts here : 
+
+1.Frist add the dependency for the required jar files :
+  	hibernate core dependency 
+	mysql connector dependency
+
+2.Create a pojo 
+(This pojo is mapped with the db table by hibernate , which is a ORM software)
+eg: 
+package com.hibernate;
+
+public class Student {
+    private int sId;
+    private String sName;
+    private String sDept;
+
+    public int getsId() {
+        return sId;
+    }
+
+    public void setsId(int sId) {
+        this.sId = sId;
+    }
+
+    public String getsName() {
+        return sName;
+    }
+
+    public void setsName(String sName) {
+        this.sName = sName;
+    }
+
+    public String getsDept() {
+        return sDept;
+    }
+
+    public void setsDept(String sDept) {
+        this.sDept = sDept;
+    }
+}
+
+3.Create hibernate.hbm.xml for mapping the pojo to the db table 
+(create diffrent mapping file for different POJO and Tables)
+eg : 
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping >
+
+<class name="com.hibernate.Student" table="hibernate_student">
+    <id name="sId" column="sId"/>
+    <property name="sName" column ="sName"/>
+    <property name="sDept" column="sDept"/>
+</class>
+
+</hibernate-mapping>
+
+
+4.Create a single hibernate.cfg.xml for creating the sessionFactory
+(this is common for all projects)
+	This creates the db connection .
+Use the below template for all : 
+--------------------------------
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+<session-factory>
+    <property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+    <property name="hibernate.connection.url">jdbc:mysql://127.0.0.1:3306/train_reservation_system_codecasa_task3</property>
+    <property name="hibernate.connection.username">root</property>
+    <property name="hibernate.connection.password">Hydrogen</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+    <property name="hibernate.connection.autocommit">false</property>
+    <property name="hibernate.show_sql">true</property>
+    <property name="hibernate.hbm2ddl.auto">update</property>
+    <mapping resource="student.hbm.xml"/>
+</session-factory>
+</hibernate-configuration>
+
+5.create the single HibernateUtil class to get the sessionFactory where ever it is needed in the project with the help of this class . We can use this class as a api to get the session Factory : 
+(This code is common for all projects)
+eg : 
+public class HibernateUtil {
+    private static StandardServiceRegistry registry ;
+    private static SessionFactory sessionFactory ;
+
+    public static SessionFactory getSessionFactory(){
+        if(sessionFactory == null){
+            try {
+                registry = new StandardServiceRegistryBuilder().configure("hibernate.cfg.xml").build();
+                MetadataSources sources = new MetadataSources(registry);
+                Metadata metadata = sources.getMetadataBuilder().build();
+                sessionFactory = metadata.getSessionFactoryBuilder().build();
+            }catch (Exception e){
+                System.out.println(e);
+            }
+        }
+        return sessionFactory;
+    }
+}
+
+
+6. Now we can use the above util class to get the sessionFactory and we can insert into the db in any  other classes in that project .
+
+DB access in the final servlet will be like : 
